@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'revoltUK/css/styles.css' %}">
+    <meta name="google-adsense-account" content="ca-pub-3963352046880098">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">RevoltUK.org</a>
+
+        <div class="ms-auto d-flex align-items-center">
+            {% if user.is_authenticated %}
+            <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-secondary me-2">Sign Out</button>
+            </form>
+            {% else %}
+            <button class="btn btn-outline-secondary me-2" type="button" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
+            <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#signupModal">Sign Up</button>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<!-- Main Container -->
+<div class="container my-4">
+
+    <!-- News Banner -->
+    <iframe src="https://widget.tagembed.com/164865?view" style=" width:100%;height:300px;overflow: auto;" frameborder="0" allowtransparency="true"></iframe>
+
+    <!-- Categories Carousel -->
+    <div class="category-carousel">
+        <button class="prev-btn">&lt;</button>
+        <div class="categories-wrapper">
+            <div class="category-buttons">
+                {% for category in categories %}
+                <button class="category-btn">{{ category.name }}</button>
+                {% endfor %}
+                {% for category in categories %}
+                <button class="category-btn">{{ category.name }}</button>
+                {% endfor %}
+            </div>
+        </div>
+        <button class="next-btn">&gt;</button>
+    </div>
+
+    <!-- Active Voting Section -->
+    <div class="voting-section-two">
+        <h3>Active Voting</h3>
+        {% for session in active_sessions %}
+        <div class="d-flex justify-content-between align-items-center p-2 mb-3" style="background-color: #D9D9D9; border-radius: 10px;">
+            <div class="d-flex align-items-center">
+                <div class="profile-circle"></div>
+                <div class="ms-3">
+                    <h5>{{ session.legislation.title }}</h5>
+                    <p id="timer-{{ forloop.counter }}">{{ session.end_time|date:"H:i:s" }}</p>
+                    <div>
+                      <p>Session ID: {{ session.id }}</p>
+                  </div>
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-primary readmore-btn" data-bs-toggle="modal" data-bs-target="#readMoreModal">Read More</button>
+                {% if user.is_authenticated %}
+                <button class="btn btn-primary vote-btn" data-bs-toggle="modal" data-bs-target="#voteModal" data-session-id="{{ session.id }}" onclick="setSelectedSessionId({{ session.id }})">Vote</button>
+                {% else %}
+                <button class="btn btn-primary vote-btn disabled" title="You must log in to vote.">Login to Vote</button>
+                {% endif %}
+            </div>
+        </div>
+        <script>
+            // Function to start the timer for each session
+            function startTimer(endTime, elementId) {
+                const end = new Date(endTime).getTime();
+                const timerElement = document.getElementById(elementId);
+
+                const countdown = setInterval(() => {
+                    const now = new Date().getTime();
+                    const distance = end - now;
+
+                    // Time calculations for hours, minutes, and seconds
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    timerElement.innerHTML = `${hours}h ${minutes}m ${seconds}s`;
+
+                    // If the countdown is over, display "Voting Closed"
+                    if (distance < 0) {
+                        clearInterval(countdown);
+                        timerElement.innerHTML = "Voting Closed";
+                    }
+                }, 1000);
+            }
+
+            // Call the function with the session's end time and timer ID
+            startTimer("{{ session.end_time|date:'Y-m-d H:i:s' }}", "timer-{{ forloop.counter }}");
+        </script>
+        {% endfor %}
+    </div>
+
+    <!-- Closed Voting Section -->
+    <h3>Closed Voting</h3>
+    <div class="voting-section">
+        {% for session in closed_sessions %}
+        <div class="d-flex justify-content-between align-items-center p-2 mb-3" style="background-color: #D9D9D9; border-radius: 10px;">
+            <div class="d-flex align-items-center">
+                <div class="profile-circle"></div>
+                <div class="ms-3">
+                    <h5>{{ session.legislation.title }}</h5>
+                    <p>Voting closed.</p>
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-primary readmore-btn" data-bs-toggle="modal" data-bs-target="#readMoreModal">Read More</button>
+                <button class="btn btn-outline-secondary vote-btn disabled">Voting Closed</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<div class="modal fade" id="voteModal" tabindex="-1" aria-labelledby="voteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="voteModalLabel">Vote on {{ session.legislation.title }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <!-- Star Rating System -->
+              <form method="POST" action="{% url 'submit_vote' 0 %}" id="voteForm">
+                {% csrf_token %}
+                  <div class="star-rating">
+                      <input type="radio" id="5-stars" name="rating" value="5">
+                      <label for="5-stars" class="star">&#9733;</label>
+                      <input type="radio" id="4-stars" name="rating" value="4">
+                      <label for="4-stars" class="star">&#9733;</label>
+                      <input type="radio" id="3-stars" name="rating" value="3">
+                      <label for="3-stars" class="star">&#9733;</label>
+                      <input type="radio" id="2-stars" name="rating" value="2">
+                      <label for="2-stars" class="star">&#9733;</label>
+                      <input type="radio" id="1-star" name="rating" value="1">
+                      <label for="1-star" class="star">&#9733;</label>
+                  </div>
+                  <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      <button type="submit" class="btn btn-primary">Submit Vote</button>
+                  </div>
+              </form>
+          </div>
+      </div>
+  </div>
+</div>
+
+<!-- Read More Modal -->
+<div class="modal fade" id="readMoreModal" tabindex="-1" aria-labelledby="readMoreModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="readMoreModalLabel">Read More</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Here is more information about the legislation...</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Login Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">Login</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sign Up Modal -->
+<div class="modal fade" id="signupModal" tabindex="-1" aria-labelledby="signupModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="signupModalLabel">Sign Up</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'signup' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Sign Up</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedSessionId = null;  // To hold the session ID
+
+function setSelectedSessionId(sessionId) {
+    selectedSessionId = sessionId;  // Update the session ID
+    console.log("Session ID set to:", selectedSessionId);  // Debugging output to track selected session ID
+}
+
+// Get the vote modal by its specific ID
+const voteModal = document.getElementById('voteModal');
+
+// Add event listener for when the modal is shown
+voteModal.addEventListener('show.bs.modal', function () {
+    const form = voteModal.querySelector('form');
+    
+    // Check if a session ID was selected and update the form's action URL
+    if (selectedSessionId) {
+        form.action = "{% url 'submit_vote' 0 %}".replace('0', selectedSessionId);
+        console.log("Form action updated to:", form.action);  // Debugging output for form action URL
+    } else {
+        form.action = "";  // In case of an error or no session ID
+        console.log("No session ID selected, form action reset.");
+    }
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,114 @@
+/* styles.css */
+
+body {
+  background-color: #F4F3F2 !important;
+}
+
+.voting-section {
+    border-radius: 10px;
+    margin-bottom: 25px;
+}
+
+.voting-section-two {
+    border-radius: 10px;
+    margin-bottom: 25px;
+    margin-top: 30px;  
+}
+  
+  .vote-btn {
+    background-color: #0d6efd;
+    color: white;
+    border-radius: 40px;
+    width: 100px !important;
+    margin-right: 10px;
+    transition: ease 0.5s;
+    margin-left: 10px;
+  }
+  
+  .vote-btn:hover, .readmore-btn:hover {
+    transform: scale(1.05);
+  }
+
+  .vote-btn.disabled {
+    background-color: grey;
+    color: black;
+    border-color: grey;
+    width: 140px !important;
+  }
+  
+  .readmore-btn {
+    border-radius: 40px;
+    transition: ease 0.5s;
+  }
+
+  .profile-circle {
+    width: 50px;
+    height: 50px;
+    background-color: black;
+    border-radius: 50%;
+  }
+  
+  .category-carousel {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%; /* Full width of the parent */
+    margin-top: -7.5%;
+  }
+  
+  .categories-wrapper {
+    display: flex;
+    overflow: hidden; /* Hide overflow */
+    width: 100%; /* Adjust this width to fit a specific number of buttons */
+  }
+  
+  .category-buttons {
+    display: flex;
+    transition: transform 0.3s ease; /* Smooth transition for scrolling */
+    
+  }
+  
+  .category-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    padding: 10px 20px;
+    margin: 5px;
+    cursor: pointer;
+    flex: 0 0 auto; /* Prevent buttons from shrinking */
+  }
+  
+  
+  .prev-btn, .next-btn {
+    background-color: #ddd; /* Light gray for buttons */
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    margin: 10px;
+  }
+  
+  .prev-btn:hover, .next-btn:hover {
+    background-color: #bbb; /* Darker gray on hover */
+  }
+
+  .star-rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+  }
+  .star {
+    font-size: 2em;
+    cursor: pointer;
+    color: gray;
+  }
+  .star:hover, .star:hover ~ .star {
+    color: gold;
+  }
+  input[type="radio"] {
+    display: none;
+  }
+  input[type="radio"]:checked ~ label {
+    color: gold;
+  }
