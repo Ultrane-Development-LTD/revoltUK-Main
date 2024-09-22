@@ -34,6 +34,7 @@ def signup_view(request):
         form = UserCreationForm()
     return render(request, 'signup.html', {'form': form})
 
+@login_required
 def submit_vote(request, session_id):
     if request.method == 'POST':
         session = get_object_or_404(VotingSession, id=session_id)
