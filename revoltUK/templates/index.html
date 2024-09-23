@@ -39,22 +39,6 @@
     <!-- News Banner -->
     <iframe src="https://widget.tagembed.com/164865?view" style=" width:100%;height:300px;overflow: auto;" frameborder="0" allowtransparency="true"></iframe>
 
-    <!-- Categories Carousel -->
-    <div class="category-carousel">
-        <button class="prev-btn">&lt;</button>
-        <div class="categories-wrapper">
-            <div class="category-buttons">
-                {% for category in categories %}
-                <button class="category-btn">{{ category.name }}</button>
-                {% endfor %}
-                {% for category in categories %}
-                <button class="category-btn">{{ category.name }}</button>
-                {% endfor %}
-            </div>
-        </div>
-        <button class="next-btn">&gt;</button>
-    </div>
-
 <!-- Active Voting Section -->
 <div class="voting-section-two">
     <h3>Active Voting</h3>
@@ -65,8 +49,8 @@
                 <div class="icon"></div>
             </div>
             <div class="ms-3">
-                <h5>{{ session.legislation.title }}</h5>
-                <p id="timer-{{ forloop.counter }}">{{ session.end_time|date:"H:i:s" }}</p>
+                <h5 style="margin-top: 20px;">{{ session.legislation.title }}</h5>
+                <p id="timer-{{ forloop.counter }}">{{ session.end_time|date:":H:i:s" }}</p>
             </div>
         </div>
         <div class="d-flex align-items-center">
@@ -84,9 +68,9 @@
                     {% endfor %}
                 {% endwith %}
             </div>
-            <button class="btn btn-primary readmore-btn" data-bs-toggle="modal" data-bs-target="#readMoreModal">Read More</button>
+            <button class="btn btn-primary readmore-btn" data-bs-toggle="modal" data-bs-target="#readMoreModal" data-legislation-title="{{ session.legislation.title }}" data-legislation-description="{{ session.legislation.description }}">Read More</button>
             {% if user.is_authenticated %}
-            <button class="btn btn-primary vote-btn" data-bs-toggle="modal" data-bs-target="#voteModal" data-session-id="{{ session.id }}" onclick="setSelectedSessionId({{ session.id }})">Vote</button> <!-- Error -->
+            <button class="btn btn-primary vote-btn" data-bs-toggle="modal" data-bs-target="#voteModal" data-session-id="{{ session.id }}" data-session-title="{{ session.legislation.title }}">Vote</button>
             {% else %}
             <button class="btn btn-primary vote-btn disabled" title="You must log in to vote.">Login to Vote</button>
             {% endif %}
@@ -97,18 +81,20 @@
         function startTimer(endTime, elementId) {
             const end = new Date(endTime).getTime();
             const timerElement = document.getElementById(elementId);
-
+    
             const countdown = setInterval(() => {
                 const now = new Date().getTime();
                 const distance = end - now;
-
-                // Time calculations for hours, minutes, and seconds
+    
+                // Time calculations for days, hours, minutes, and seconds
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                timerElement.innerHTML = `${hours}h ${minutes}m ${seconds}s`;
-
+    
+                // Update the timer element with the remaining time
+                timerElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    
                 // If the countdown is over, display "Voting Closed"
                 if (distance < 0) {
                     clearInterval(countdown);
@@ -116,9 +102,13 @@
                 }
             }, 1000);
         }
-
-        // Call the function with the session's end time and timer ID
-        startTimer("{{ session.end_time|date:'Y-m-d H:i:s' }}", "timer-{{ forloop.counter }}");
+    
+        // Loop through each active session and start a timer for each one
+        document.addEventListener('DOMContentLoaded', function () {
+            {% for session in active_sessions %}
+                startTimer("{{ session.end_time|date:'Y-m-d H:i:s' }}", "timer-{{ forloop.counter }}");
+            {% endfor %}
+        });
     </script>
     {% endfor %}
 </div>
@@ -361,6 +351,44 @@
 
     // Call the function after the page loads
     document.addEventListener('DOMContentLoaded', updateProfileCircles);
+</script>
+<script>
+    // When the modal is shown, populate the title and session ID
+    const voteModal = document.getElementById('voteModal');
+    voteModal.addEventListener('show.bs.modal', function (event) {
+        // Button that triggered the modal
+        const button = event.relatedTarget;
+        
+        // Extract session details from data-* attributes
+        const sessionId = button.getAttribute('data-session-id');
+        const sessionTitle = button.getAttribute('data-session-title');
+
+        // Update modal title
+        const modalTitle = voteModal.querySelector('.modal-title');
+        modalTitle.textContent = 'Vote on ' + sessionTitle;
+
+        // Optionally, store the session ID somewhere in the modal if needed for further processing
+        voteModal.querySelector('#hiddenSessionId').value = sessionId;
+    });
+</script>
+<script>
+    const readMoreModal = document.getElementById('readMoreModal');
+    
+    readMoreModal.addEventListener('show.bs.modal', function (event) {
+        // Button that triggered the modal
+        const button = event.relatedTarget;
+        
+        // Extract title and description from data-* attributes
+        const legislationTitle = button.getAttribute('data-legislation-title');
+        const legislationDescription = button.getAttribute('data-legislation-description');
+
+        // Update the modal's title and description
+        const modalTitle = readMoreModal.querySelector('.modal-title');
+        const modalBody = readMoreModal.querySelector('.modal-body p');
+
+        modalTitle.textContent = legislationTitle;
+        modalBody.textContent = legislationDescription;
+    });
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
