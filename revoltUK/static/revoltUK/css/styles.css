@@ -97,18 +97,56 @@ body {
     display: flex;
     flex-direction: row-reverse;
     justify-content: center;
+    margin-bottom: 15px;
   }
   .star {
     font-size: 2em;
     cursor: pointer;
     color: gray;
+    padding: 5px;
   }
   .star:hover, .star:hover ~ .star {
-    color: gold;
+    color: rgb(255, 0, 0);
   }
   input[type="radio"] {
     display: none;
   }
   input[type="radio"]:checked ~ label {
-    color: gold;
+    color: rgb(255, 0, 0);
   }
+
+.footer {
+  width: 100%;
+}
+
+.angry-face {
+  color: red; /* Set the color to red */
+  opacity: 1; /* Default opacity */
+  transition: opacity 0.3s ease; /* Smooth transition for opacity change */
+}
+
+/* Apply dynamic opacity */
+.angry-face.opacity-0 {
+  opacity: 0; /* Fully transparent */
+}
+
+.angry-face.opacity-1 {
+  opacity: 0.2; /* Adjust this value for lower opacity */
+}
+
+/* Continue for other opacity levels */
+.angry-face.opacity-2 {
+  opacity: 0.4;
+}
+
+.angry-face.opacity-3 {
+  opacity: 0.6;
+}
+
+.angry-face.opacity-4 {
+  opacity: 0.8;
+}
+
+.angry-face.opacity-5 {
+  opacity: 1; /* Fully opaque */
+}
