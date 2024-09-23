@@ -40,14 +40,25 @@ body {
     border-radius: 40px;
     transition: ease 0.5s;
   }
-
-  .profile-circle {
-    width: 50px;
-    height: 50px;
-    background-color: black;
-    border-radius: 50%;
-  }
   
+  .profile-circle {
+    width: 60px; 
+    height: 60px; 
+    border-radius: 50%; 
+    background-color: #000; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    margin-right: 10px; 
+    margin-left: 17.5px;
+}
+
+.profile-circle .icon {
+    font-size: 24px;
+    color: #fff; 
+    line-height: 0; 
+}
+
   .category-carousel {
     display: flex;
     align-items: center;
@@ -115,8 +126,12 @@ body {
     color: rgb(255, 0, 0);
   }
 
-.footer {
-  width: 100%;
+  footer {
+    position: relative;
+    left: 0;
+    right: 0;
+    width: 100%;
+    margin: 0;  /* Reset any default margins */
 }
 
 .angry-face {

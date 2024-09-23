@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{% static 'revoltUK/css/styles.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <meta name="google-adsense-account" content="ca-pub-3963352046880098">
+    <script src="{% static 'js/adblocker.js' %}"></script>
 </head>
 <body>
 
@@ -60,7 +61,9 @@
     {% for session in active_sessions %}
     <div class="d-flex justify-content-between align-items-center p-2 mb-3" style="background-color: #D9D9D9; border-radius: 10px;">
         <div class="d-flex align-items-center">
-            <div class="profile-circle"></div>
+            <div class="profile-circle" data-category="{{ session.legislation.category.name }}">
+                <div class="icon"></div>
+            </div>
             <div class="ms-3">
                 <h5>{{ session.legislation.title }}</h5>
                 <p id="timer-{{ forloop.counter }}">{{ session.end_time|date:"H:i:s" }}</p>
@@ -73,7 +76,7 @@
             <div class="rating-icons me-5">
                 {% with average_rating=session_ratings|get_item:session.id|default:0 %}
                     {% for i in "12345" %}
-                        {% if i|add:"0" <= average_rating %}
+                        {% if i|add:"0" <= average_rating %} <!-- Error -->
                             <i class="fa-solid fa-face-angry" style="color: red; opacity: 1; font-size: 24px;"></i>
                         {% else %}
                             <i class="fa-solid fa-face-angry" style="color: red; opacity: 0.5; font-size: 24px;"></i>
@@ -83,7 +86,7 @@
             </div>
             <button class="btn btn-primary readmore-btn" data-bs-toggle="modal" data-bs-target="#readMoreModal">Read More</button>
             {% if user.is_authenticated %}
-            <button class="btn btn-primary vote-btn" data-bs-toggle="modal" data-bs-target="#voteModal" data-session-id="{{ session.id }}" onclick="setSelectedSessionId({{ session.id }})">Vote</button>
+            <button class="btn btn-primary vote-btn" data-bs-toggle="modal" data-bs-target="#voteModal" data-session-id="{{ session.id }}" onclick="setSelectedSessionId({{ session.id }})">Vote</button> <!-- Error -->
             {% else %}
             <button class="btn btn-primary vote-btn disabled" title="You must log in to vote.">Login to Vote</button>
             {% endif %}
@@ -126,37 +129,39 @@
     }
 </style>
 
-    <!-- Closed Voting Section -->
-    <h3>Closed Voting</h3>
-    <div class="voting-section">
-        {% for session in closed_sessions %}
-        <div class="d-flex justify-content-between align-items-center p-2 mb-3" style="background-color: #D9D9D9; border-radius: 10px;">
-            <div class="d-flex align-items-center">
-                <div class="profile-circle"></div>
-                <div class="ms-3">
-                    <h5>{{ session.legislation.title }}</h5>
-                    <p>Voting closed.</p>
-                </div>
-            </div>
-            <div>
-                <button class="btn btn-primary readmore-btn" data-bs-toggle="modal" data-bs-target="#readMoreModal">Read More</button>
-                <button class="btn btn-outline-secondary vote-btn disabled">Voting Closed</button>
+<!-- Closed Voting Section -->
+<h3>Closed Voting</h3>
+<div class="voting-section">
+    {% for session in closed_sessions %}
+    <div class="d-flex justify-content-between align-items-center p-2 mb-3" style="background-color: #D9D9D9; border-radius: 10px;">
+        <div class="d-flex align-items-center">
+            <div class="profile-circle"></div>
+            <div class="ms-3">
+                <h5>{{ session.legislation.title }}</h5>
+                <p>Voting closed.</p>
             </div>
         </div>
-        {% endfor %}
+        <div class="d-flex align-items-center">
+            <div class="me-2">
+                <p class="mb-0">Final Rating:</p>
+            </div>
+            <div class="rating-icons me-5">
+                {% with average_rating=session_ratings|get_item:session.id|default:0 %}
+                    {% for i in "12345" %}
+                        {% if i|add:"0" <= average_rating %} <!-- Error -->
+                            <i class="fa-solid fa-face-angry" style="color: red; opacity: 1; font-size: 24px;"></i>
+                        {% else %}
+                            <i class="fa-solid fa-face-angry" style="color: red; opacity: 0.5; font-size: 24px;"></i>
+                        {% endif %}
+                    {% endfor %}
+                {% endwith %}
+            </div>
+            <button class="btn btn-primary readmore-btn" data-bs-toggle="modal" data-bs-target="#readMoreModal">Read More</button>
+            <button class="btn btn-outline-secondary vote-btn disabled">Voting Closed</button>
+        </div>
     </div>
+    {% endfor %}
 </div>
-
-    <!-- Footer -->
-    <footer class="bg-dark text-center text-white py-3 mt-auto">
-        <div class="container">
-            <p class="mb-1">&copy; 2024 RevoltUK. All rights reserved.</p>
-            <p class="mb-0">
-                Made with <span style="color: #e25555;">&#9829;</span> by 
-                <a href="https://ultranedevelopment.co.uk" class="text-white" target="_blank">Ultrane Development</a>
-            </p>
-        </div>
-    </footer>
 
 <div class="modal fade" id="voteModal" tabindex="-1" aria-labelledby="voteModalLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -284,6 +289,16 @@
         </div>
     </div>
 </div>
+</div>
+<footer class="bg-dark text-center text-white py-4">
+    <div class="container-fluid">
+        <p class="mb-1">&copy; 2024 RevoltUK. All rights reserved.</p>
+        <p class="mb-0">
+            Made with <span style="color: #e25555;">&#9829;</span> by 
+            <a href="https://ultranedevelopment.co.uk" class="text-white" target="_blank">Ultrane Development</a>
+        </p>
+    </div>
+</footer>
 
 <script>
     let selectedSessionId = null;  // To hold the session ID
@@ -316,6 +331,38 @@
         updateFormAction();  // Ensure the form action is updated when the modal is shown
     });
     </script>
+
+<script>
+    const categoryIcons = {
+        "Healthcare": "<i class='fa-solid fa-hospital'></i>",
+        "Education": "<i class='fa-solid fa-school'></i>",
+        "Environment": "<i class='fa-solid fa-tree'></i>",
+        "Economy & Taxation": "<i class='fa-solid fa-money-bill'></i>",
+        "Civil Rights": "<i class='fa-solid fa-scale-balanced'></i>",
+        "Immigration": "<i class='fa-solid fa-ship'></i>",
+        "Defense & National Security": "<i class='fa-solid fa-shield'></i>",
+        "Criminal Justice & Law Enforcement": "<i class='fa-solid fa-gavel'></i>",
+        "Technology & Privacy": "<i class='fa-solid fa-microchip'></i>",
+        "Foreign Relations": "<i class='fa-solid fa-globe'></i>",
+        "Transportation & Infrastructure": "<i class='fa-solid fa-car'></i>",
+        "Social Welfare": "<i class='fa-solid fa-heart'></i>",
+        "Agriculture & Food": "<i class='fa-solid fa-tractor'></i>",
+        "Labor & Employment": "<i class='fa-solid fa-briefcase'></i>",
+        "Energy & Natural Resources": "<i class='fa-solid fa-lightbulb'></i>"
+    };
+
+    function updateProfileCircles() {
+        document.querySelectorAll('.profile-circle').forEach(circle => {
+            const category = circle.getAttribute('data-category');
+            const iconHtml = categoryIcons[category] || ''; // Fallback to empty if category not found
+            circle.querySelector('.icon').innerHTML = iconHtml; // Set the icon
+        });
+    }
+
+    // Call the function after the page loads
+    document.addEventListener('DOMContentLoaded', updateProfileCircles);
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"></script>
 

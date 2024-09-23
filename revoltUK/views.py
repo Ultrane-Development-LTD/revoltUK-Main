@@ -11,8 +11,8 @@ def home(request):
     categories = Category.objects.all()
     current_time = timezone.now()
 
-    # Fetch active and closed voting sessions
-    active_sessions = VotingSession.objects.filter(start_time__lte=current_time, end_time__gte=current_time)
+    # Fetch active and closed voting sessions with related legislation and category
+    active_sessions = VotingSession.objects.filter(start_time__lte=current_time, end_time__gte=current_time).select_related('legislation__category')
     closed_sessions = VotingSession.objects.filter(end_time__lt=current_time)
 
     # Calculate ratings for each session
