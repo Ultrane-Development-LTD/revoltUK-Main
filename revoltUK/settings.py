@@ -29,8 +29,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    '.platformsh.site',
-    'revoltuk.fly.dev',
+    'revoltuk.xyz'
 ]
 
 STATIC_URL = '/static/'
